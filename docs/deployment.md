@@ -33,7 +33,7 @@ https://songshu-assistant.onrender.com
 `render.yaml` 已经配置好：
 
 ```bash
-buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+buildCommand: npm install -g pnpm@9.15.9 && pnpm install --frozen-lockfile && pnpm build
 startCommand: pnpm start
 ```
 
