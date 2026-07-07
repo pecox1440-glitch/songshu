@@ -17,6 +17,9 @@ const host = process.env.HOST || "0.0.0.0";
 const distIndexPath = path.join(rootDir, "dist", "index.html");
 
 const app = express();
+app.get("/healthz", (_req, res) => {
+  res.status(200).send("ok");
+});
 app.use(requireAccessPassword);
 app.use(express.json({ limit: "1mb" }));
 
