@@ -99,4 +99,19 @@ describe("extractAssistantResponse", () => {
 
     expect(extractAssistantResponse(response).text).toBe("根据最新赛程，今晚有比赛。\n\n更多信息见。");
   });
+
+  test("removes standalone citation artifact lines", () => {
+    const response = {
+      choices: [
+        {
+          message: {
+            role: "assistant",
+            content: "今天没有正式比分。\n\ncite   turn0search0   turn0search5\n\n可以查询历史交锋。",
+          },
+        },
+      ],
+    };
+
+    expect(extractAssistantResponse(response).text).toBe("今天没有正式比分。\n\n可以查询历史交锋。");
+  });
 });

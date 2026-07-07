@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { extractAssistantResponse } from "./citations.js";
 import { buildChatInstructions } from "./prompt.js";
+import { buildSearchContext, searchWeb, shouldSearchWeb } from "./search.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -105,17 +106,23 @@ app.post("/api/chat", async (req, res) => {
   }
 
   try {
+    const searchResults = shouldSearchWeb(input.at(-1)?.content) ? await searchWeb(input.at(-1).content) : [];
+    const instructions = [buildChatInstructions(), buildSearchContext(searchResults)].filter(Boolean).join("\n\n");
     const payload = await requestOpenAI(
       {
         model: settings.model,
-        instructions: buildChatInstructions(),
+        instructions,
         input,
         tools: [{ type: "web_search_preview" }],
       },
       settings,
     );
 
-    res.json(extractAssistantResponse(payload));
+    const extracted = extractAssistantResponse(payload);
+    res.json({
+      ...extracted,
+      sources: mergeSources(extracted.sources, searchResults),
+    });
   } catch (error) {
     res.status(502).json({
       error: error.message || "无法连接模型服务。请检查网络和 API key。",
@@ -136,6 +143,25 @@ if (process.env.NODE_ENV === "production" || fs.existsSync(distIndexPath)) {
     appType: "spa",
   });
   app.use(vite.middlewares);
+}
+
+function mergeSources(modelSources, searchResults) {
+  const merged = [];
+  const seenUrls = new Set();
+
+  for (const source of [...modelSources, ...searchResults]) {
+    if (!source?.url || seenUrls.has(source.url)) {
+      continue;
+    }
+
+    seenUrls.add(source.url);
+    merged.push({
+      title: source.title || source.url,
+      url: source.url,
+    });
+  }
+
+  return merged;
 }
 
 app.listen(port, host, () => {

@@ -51,6 +51,7 @@ export function cleanAssistantText(text) {
   return String(text || "")
     .replace(/\*\*([^*\r\n]+)\*\*/g, "$1")
     .replace(/(?:^|[ \t])(?:cite[ \t]+)?turn\d+search\d+\b/gi, "")
+    .replace(/^[ \t]*cite[ \t]*$/gim, "")
     .replace(/[ \t]+([。！？；，、])/g, "$1")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
