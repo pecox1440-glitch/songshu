@@ -39,10 +39,21 @@ export function extractAssistantResponse(response) {
     }
   }
 
+  const rawText = textParts.join("\n\n").trim() || response?.output_text || extractChatCompletionText(response);
+
   return {
-    text: textParts.join("\n\n").trim() || response?.output_text || extractChatCompletionText(response),
+    text: cleanAssistantText(rawText),
     sources,
   };
+}
+
+export function cleanAssistantText(text) {
+  return String(text || "")
+    .replace(/\*\*([^*\r\n]+)\*\*/g, "$1")
+    .replace(/(?:^|[ \t])(?:cite[ \t]+)?turn\d+search\d+\b/gi, "")
+    .replace(/[ \t]+([。！？；，、])/g, "$1")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 function extractChatCompletionText(response) {

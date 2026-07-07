@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { extractAssistantResponse } from "./citations.js";
+import { buildChatInstructions } from "./prompt.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -107,8 +108,7 @@ app.post("/api/chat", async (req, res) => {
     const payload = await requestOpenAI(
       {
         model: settings.model,
-        instructions:
-          "你是一个简洁、可靠的中文助手。需要最新信息或来源支撑时使用联网搜索，并通过搜索注解提供引用来源。",
+        instructions: buildChatInstructions(),
         input,
         tools: [{ type: "web_search_preview" }],
       },

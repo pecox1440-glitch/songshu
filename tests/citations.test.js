@@ -69,4 +69,34 @@ describe("extractAssistantResponse", () => {
       sources: [],
     });
   });
+
+  test("removes markdown bold markers from assistant text", () => {
+    const response = {
+      choices: [
+        {
+          message: {
+            role: "assistant",
+            content: "**今天的比赛**需要看最新赛程。",
+          },
+        },
+      ],
+    };
+
+    expect(extractAssistantResponse(response).text).toBe("今天的比赛需要看最新赛程。");
+  });
+
+  test("removes internal citation artifacts from assistant text", () => {
+    const response = {
+      choices: [
+        {
+          message: {
+            role: "assistant",
+            content: "根据最新赛程，今晚有比赛。 cite turn0search0\n\n更多信息见 turn0search5。",
+          },
+        },
+      ],
+    };
+
+    expect(extractAssistantResponse(response).text).toBe("根据最新赛程，今晚有比赛。\n\n更多信息见。");
+  });
 });
