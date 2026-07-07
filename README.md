@@ -24,6 +24,8 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-5-mini
 HOST=0.0.0.0
 PORT=5173
+ACCESS_USERNAME=songshu
+ACCESS_PASSWORD=change-this-password
 ```
 
 ## Run
@@ -72,7 +74,7 @@ For a fixed URL without buying a domain, deploy to Render:
 1. Push this folder to a GitHub repository.
 2. In Render, choose **New +** -> **Blueprint**.
 3. Select the repository and use `render.yaml`.
-4. Fill `OPENAI_API_KEY` when Render asks for the secret value.
+4. Fill `OPENAI_API_KEY` and `ACCESS_PASSWORD` when Render asks for secret values.
 5. Deploy. Render will give you a fixed `onrender.com` URL.
 
 See [docs/deployment.md](docs/deployment.md) for Render, Docker, hosted Node platform, domain, and HTTPS notes.

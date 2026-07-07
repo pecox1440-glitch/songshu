@@ -3,4 +3,5 @@ dist/
 server.log
 server.err.log
 cloudflared*.log
+auth-test*.log
 .env

@@ -17,3 +17,7 @@ services:
         value: gpt-5-mini
       - key: OPENAI_API_KEY
         sync: false
+      - key: ACCESS_USERNAME
+        value: songshu
+      - key: ACCESS_PASSWORD
+        sync: false

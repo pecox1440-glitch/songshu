@@ -10,9 +10,12 @@ OPENAI_BASE_URL=https://maylily.xyz/v1
 OPENAI_MODEL=gpt-5-mini
 HOST=0.0.0.0
 PORT=5173
+ACCESS_USERNAME=songshu
+ACCESS_PASSWORD=change-this-password
 ```
 
 在 Render、Railway、Fly.io、VPS 或 Docker 平台里，把这些变量配置到平台的环境变量面板。不要把真实 API Key 提交到代码仓库。
+`ACCESS_PASSWORD` 是访问网站用的密码，也不要提交到代码仓库。
 
 ## Render 固定网址部署
 
@@ -28,7 +31,7 @@ https://songshu-assistant.onrender.com
 2. 打开 Render，选择 **New +** -> **Blueprint**。
 3. 连接这个 GitHub 仓库。
 4. Render 读取 `render.yaml` 后，会要求填写 `OPENAI_API_KEY`。
-5. 填入你的 API Key，然后点击部署。
+5. 填入你的 API Key 和 `ACCESS_PASSWORD`，然后点击部署。
 
 `render.yaml` 已经配置好：
 
@@ -38,6 +41,18 @@ startCommand: pnpm start
 ```
 
 免费 Render 服务可能会休眠，首次打开会慢一点。长期高频使用建议升级付费实例。
+
+## 访问密码
+
+设置 `ACCESS_PASSWORD` 后，访问网站时浏览器会先弹出登录框。
+
+默认用户名：
+
+```text
+songshu
+```
+
+密码就是你在 Render 环境变量里填写的 `ACCESS_PASSWORD`。如果不设置 `ACCESS_PASSWORD`，访问密码功能会关闭。
 
 ## Docker 部署
 

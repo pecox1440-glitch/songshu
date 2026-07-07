@@ -1,5 +1,6 @@
 import express from "express";
 import { spawn } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,6 +17,7 @@ const host = process.env.HOST || "0.0.0.0";
 const distIndexPath = path.join(rootDir, "dist", "index.html");
 
 const app = express();
+app.use(requireAccessPassword);
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/api/settings", (_req, res) => {
@@ -205,9 +207,64 @@ function saveSettings(settings) {
     `OPENAI_MODEL=${normalizeModel(settings.model)}`,
     `HOST=${host}`,
     `PORT=${port}`,
+    ...(process.env.ACCESS_USERNAME ? [`ACCESS_USERNAME=${process.env.ACCESS_USERNAME}`] : []),
+    ...(process.env.ACCESS_PASSWORD ? [`ACCESS_PASSWORD=${process.env.ACCESS_PASSWORD}`] : []),
     "",
   ].join("\n");
   fs.writeFileSync(path.join(rootDir, ".env"), envContent, "utf8");
+}
+
+function requireAccessPassword(req, res, next) {
+  const expectedPassword = process.env.ACCESS_PASSWORD;
+
+  if (!expectedPassword) {
+    next();
+    return;
+  }
+
+  const expectedUsername = process.env.ACCESS_USERNAME || "";
+  const credentials = parseBasicAuth(req.headers.authorization);
+  const usernameMatches = !expectedUsername || safeEqual(credentials.username, expectedUsername);
+  const passwordMatches = safeEqual(credentials.password, expectedPassword);
+
+  if (usernameMatches && passwordMatches) {
+    next();
+    return;
+  }
+
+  res.setHeader("WWW-Authenticate", 'Basic realm="Songshu Assistant"');
+  res.status(401).send("需要访问密码。");
+}
+
+function parseBasicAuth(authorization) {
+  const [scheme, encoded] = String(authorization || "").split(" ");
+
+  if (scheme !== "Basic" || !encoded) {
+    return { username: "", password: "" };
+  }
+
+  const decoded = Buffer.from(encoded, "base64").toString("utf8");
+  const separatorIndex = decoded.indexOf(":");
+
+  if (separatorIndex < 0) {
+    return { username: decoded, password: "" };
+  }
+
+  return {
+    username: decoded.slice(0, separatorIndex),
+    password: decoded.slice(separatorIndex + 1),
+  };
+}
+
+function safeEqual(actual, expected) {
+  const actualBuffer = Buffer.from(String(actual || ""));
+  const expectedBuffer = Buffer.from(String(expected || ""));
+
+  if (actualBuffer.length !== expectedBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(actualBuffer, expectedBuffer);
 }
 
 function maskApiKey(apiKey) {
